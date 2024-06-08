@@ -104,3 +104,10 @@ ctest .
 ```
 
 For more info about CMake see [here](./README_cmake.md).
+
+## References
+
+[Clang-Format Style Options](https://clang.llvm.org/docs/ClangFormatStyleOptions.html)
+
+[Clang-Format Style Options [zh]](https://www.cnblogs.com/PaulpauL/p/5929753.html)
+
