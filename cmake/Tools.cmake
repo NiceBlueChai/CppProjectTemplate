@@ -59,6 +59,8 @@ function(add_clang_format_target)
         EXCLUDE
         REGEX
         "${CMAKE_SOURCE_DIR}/(build|external)/.*")
+
+    file(WRITE "${CMAKE_BINARY_DIR}/format-file-list" "${CPP_FILES}")
     find_program(CLANGFORMAT clang-format)
     if(CLANGFORMAT)
         message(STATUS "Added Clang Format")
@@ -66,7 +68,7 @@ function(add_clang_format_target)
             run_clang_format
             COMMAND
                 ${Python3_EXECUTABLE}
-                ${CMAKE_SOURCE_DIR}/tools/run-clang-format.py ${CPP_FILES}
+                ${CMAKE_SOURCE_DIR}/tools/run-clang-format.py --files "\"${CMAKE_BINARY_DIR}/format-file-list\""
                 --in-place
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
             USES_TERMINAL)

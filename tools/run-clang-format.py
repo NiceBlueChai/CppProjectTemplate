@@ -59,6 +59,9 @@ def excludes_from_file(ignore_file):
     return excludes
 
 def list_files(files, recursive=False, extensions=None, exclude=None):
+    with open(files, 'r', encoding='utf-8') as f:
+        fcontent = f.readline()
+    files = fcontent.split(';')
     if extensions is None:
         extensions = []
     if exclude is None:
@@ -132,7 +135,7 @@ def run_clang_format_diff(args, file):
         raise DiffError(str(exc))
 
     if args.in_place:
-        invocation = [args.clang_format_executable, '-i', file]
+        invocation = [args.clang_format_executable, '-i', '--verbose', file]
     else:
         invocation = [args.clang_format_executable, file]
 
@@ -275,7 +278,10 @@ def main():
         '--in-place',
         action='store_true',
         help='format file instead of printing differences')
-    parser.add_argument('files', metavar='file', nargs='+')
+    parser.add_argument(
+        '--files',
+        help=' A file containing a list of files to process,'
+    )
     parser.add_argument(
         '-q',
         '--quiet',
@@ -356,7 +362,7 @@ def main():
 
     if not files:
         return
-
+  
     njobs = args.j
     if njobs == 0:
         njobs = multiprocessing.cpu_count() + 1
