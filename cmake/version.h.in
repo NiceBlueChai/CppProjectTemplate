@@ -1,0 +1,175 @@
+#pragma once
+
+#include <string>
+
+// Version numbers
+#define VERSION_MAJOR @VERSION_MAJOR@      // 主版本号
+#define VERSION_MINOR @VERSION_MINOR@      // 次版本号
+#define VERSION_PATCH @VERSION_PATCH@      // 修订号
+#define VERSION_TWEAK @VERSION_TWEAK@      // 微调号
+
+// Version string
+#define VERSION_STRING "@VERSION_STRING@"  // 完整版本字符串
+
+// Version check macros (similar to QT_VERSION_CHECK)
+#define VERSION_CHECK(major, minor, patch) ((major<<16)|(minor<<8)|(patch)) // 版本号转为整数
+#define VERSION_NUMBER VERSION_CHECK(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH) // 当前版本整数
+
+// Current version as a comparable number
+#define PROJECT_VERSION VERSION_NUMBER     // 项目版本号（整数）
+
+// Version comparison macros for conditional compilation
+#define PROJECT_VERSION_CHECK(major, minor, patch) VERSION_CHECK(major, minor, patch) // 构造版本整数
+
+// Helper macros for version comparisons
+#define PROJECT_VERSION_AT_LEAST(major, minor, patch) \
+    (PROJECT_VERSION >= PROJECT_VERSION_CHECK(major, minor, patch)) // 至少某版本
+
+#define PROJECT_VERSION_BEFORE(major, minor, patch) \
+    (PROJECT_VERSION < PROJECT_VERSION_CHECK(major, minor, patch)) // 早于某版本
+
+#define PROJECT_VERSION_EXACTLY(major, minor, patch) \
+    (PROJECT_VERSION == PROJECT_VERSION_CHECK(major, minor, patch)) // 精确某版本
+
+// Convenience macros for major version checks
+#define PROJECT_VERSION_MAJOR_AT_LEAST(major) \
+    (VERSION_MAJOR >= major) // 主版本至少
+
+#define PROJECT_VERSION_MAJOR_BEFORE(major) \
+    (VERSION_MAJOR < major) // 主版本早于
+
+// Example usage:
+// #if PROJECT_VERSION >= PROJECT_VERSION_CHECK(2, 0, 0)
+//     // Code for version 2.0.0 and above
+// #elif PROJECT_VERSION >= PROJECT_VERSION_CHECK(1, 5, 0)
+//     // Code for version 1.5.0 to 1.x.x
+// #else
+//     // Code for version below 1.5.0
+// #endif
+
+// Git information
+#define GIT_COMMIT_HASH "@GIT_COMMIT_HASH@"    // 当前提交哈希
+#define GIT_BRANCH "@GIT_BRANCH@"              // 当前分支
+#define GIT_TAG "@GIT_TAG@"                    // 当前标签
+#define GIT_DIRTY "@GIT_DIRTY@"                // 是否有未提交修改
+
+// Build information
+#define BUILD_TIMESTAMP "@BUILD_TIMESTAMP@"     // 构建时间
+#define BUILD_TYPE "@CMAKE_BUILD_TYPE@"         // 构建类型(Debug/Release等)
+#define COMPILER_ID "@CMAKE_CXX_COMPILER_ID@"   // 编译器ID
+#define COMPILER_VERSION "@CMAKE_CXX_COMPILER_VERSION@" // 编译器版本
+#define CXX_STANDARD "@CMAKE_CXX_STANDARD@"     // C++标准
+
+// Build flags
+#define CXX_FLAGS "@CMAKE_CXX_FLAGS@"                  // 通用编译参数
+#define CXX_FLAGS_DEBUG "@CMAKE_CXX_FLAGS_DEBUG@"      // Debug编译参数
+#define CXX_FLAGS_RELEASE "@CMAKE_CXX_FLAGS_RELEASE@"  // Release编译参数
+#define CXX_FLAGS_RELWITHDEBINFO "@CMAKE_CXX_FLAGS_RELWITHDEBINFO@" // RelWithDebInfo编译参数
+#define CXX_FLAGS_MINSIZEREL "@CMAKE_CXX_FLAGS_MINSIZEREL@"         // MinSizeRel编译参数
+
+namespace Version {
+    // Version information (C++11 constexpr for integral constants)
+    constexpr int MAJOR = VERSION_MAJOR;   // 主版本号
+    constexpr int MINOR = VERSION_MINOR;   // 次版本号
+    constexpr int PATCH = VERSION_PATCH;   // 修订号
+    constexpr int TWEAK = VERSION_TWEAK;   // 微调号
+
+    // 获取当前构建类型下的所有编译参数
+    inline std::string getCurrentBuildFlags() {
+        std::string current_flags = CXX_FLAGS;
+        std::string build_type = BUILD_TYPE;
+        if (build_type == "Debug") {
+            std::string debug_flags = CXX_FLAGS_DEBUG;
+            if (!debug_flags.empty()) {
+                current_flags += " " + debug_flags;
+            }
+        } else if (build_type == "Release") {
+            std::string release_flags = CXX_FLAGS_RELEASE;
+            if (!release_flags.empty()) {
+                current_flags += " " + release_flags;
+            }
+        } else if (build_type == "RelWithDebInfo") {
+            std::string relwithdebinfo_flags = CXX_FLAGS_RELWITHDEBINFO;
+            if (!relwithdebinfo_flags.empty()) {
+                current_flags += " " + relwithdebinfo_flags;
+            }
+        } else if (build_type == "MinSizeRel") {
+            std::string minsizerel_flags = CXX_FLAGS_MINSIZEREL;
+            if (!minsizerel_flags.empty()) {
+                current_flags += " " + minsizerel_flags;
+            }
+        }
+        return current_flags;
+    }
+
+    // 获取构建类型(Debug/Release等)
+    inline std::string getBuildConfiguration() {
+        std::string cmake_build_type = BUILD_TYPE;
+        if (!cmake_build_type.empty()) {
+            return cmake_build_type;
+        }
+        // Fallback to macro-based detection
+#if defined(NDEBUG) && !defined(_DEBUG)
+        return "Release";
+#else
+        return "Debug";
+#endif
+    }
+
+    // 获取详细构建配置信息（包含优化、宏等）
+    inline std::string getDetailedBuildConfiguration() {
+        std::string config = getBuildConfiguration();
+        std::string details;
+#ifdef NDEBUG
+        details += " [NDEBUG]";
+#endif
+#ifdef _DEBUG
+        details += " [_DEBUG]";
+#endif
+#ifdef _ITERATOR_DEBUG_LEVEL
+        details += " [ITR_DBG=" + std::to_string(_ITERATOR_DEBUG_LEVEL) + "]";
+#endif
+#ifdef _SECURE_SCL
+        details += " [SECURE_SCL=" + std::to_string(_SECURE_SCL) + "]";
+#endif
+        // Add optimization info
+        if (config == "Debug") {
+            details += " [Unoptimized]";
+        } else if (config == "Release") {
+            details += " [O2, No Debug Info]";
+        } else if (config == "RelWithDebInfo") {
+            details += " [O2, With Debug Info]";
+        } else if (config == "MinSizeRel") {
+            details += " [O1, Size Optimized]";
+        }
+        return config + details;
+    }
+
+    // 判断当前版本是否大于等于指定版本
+    inline bool checkVersion(int major, int minor, int patch) {
+        return VERSION_NUMBER >= VERSION_CHECK(major, minor, patch);
+    }
+
+    // 获取完整版本字符串（含tag、commit、dirty、分支等信息）
+    inline std::string getFullVersionString() {
+        std::string result = VERSION_STRING;
+        std::string tag = GIT_TAG;
+        if (!tag.empty()) {
+            result += " (" + tag + ")";
+        }
+        std::string commit_hash = GIT_COMMIT_HASH;
+        if (!commit_hash.empty()) {
+            result += " [" + commit_hash;
+            std::string dirty = GIT_DIRTY;
+            if (dirty == "TRUE") {
+                result += "-dirty";
+            }
+            result += "]";
+        }
+        std::string branch = GIT_BRANCH;
+        if (!branch.empty() && branch != "HEAD") {
+            result += " on " + branch;
+        }
+        return result;
+    }
+}

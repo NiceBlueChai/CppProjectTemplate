@@ -9,6 +9,7 @@
 build/
 build-*/
 html/
+build_*/
 
 ################################
 ############ C/C++ #############
@@ -145,3 +146,7 @@ ipch/
 # Visual Studio Trace Files
 *.e2e
 tags
+
+.cache
+.cmake
+CMakeUserPresets.json

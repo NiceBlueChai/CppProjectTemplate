@@ -9,12 +9,54 @@
 
 #include "config.hpp"
 #include "foo.h"
+#include "version_generated.h"  // Include the generated version header
 
 using json = nlohmann::json;
 namespace fs = std::filesystem;
 
 int main(int argc, char **argv)
 {
+    // Display version information
+    fmt::print("=== Project Version Information ===\n");
+    fmt::print("Project Version: {}\n", Version::getFullVersionString());
+    fmt::print("Version Number: {}.{}.{}\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+    fmt::print("Git Commit: {}\n", GIT_COMMIT_HASH);
+    fmt::print("Git Branch: {}\n", GIT_BRANCH);
+    fmt::print("Build Time: {}\n", BUILD_TIMESTAMP);
+    fmt::print("Build Type: {}\n", BUILD_TYPE);
+    fmt::print("Current Build Config: {}\n", Version::getBuildConfiguration());
+    fmt::print("Detailed Build Config: {}\n", Version::getDetailedBuildConfiguration());
+    fmt::print("Compiler: {} {}\n", COMPILER_ID, COMPILER_VERSION);
+    fmt::print("Current Build Flags: {}\n", Version::getCurrentBuildFlags());
+    fmt::print("\n");
+
+    // Demonstrate version comparison macros
+    std::cout << "=== Version Comparison Examples ===\n";
+    
+#if PROJECT_VERSION >= PROJECT_VERSION_CHECK(1, 0, 0)
+    std::cout << "✓ This is version 1.0.0 or higher\n";
+#else
+    std::cout << "✗ This is a version below 1.0.0\n";
+#endif
+
+#if PROJECT_VERSION_AT_LEAST(1, 0, 0)
+    std::cout << "✓ Using PROJECT_VERSION_AT_LEAST macro: version >= 1.0.0\n";
+#endif
+
+#if PROJECT_VERSION_MAJOR_AT_LEAST(1)
+    std::cout << "✓ Major version is at least 1\n";
+#endif
+
+    // Conditional compilation example
+#if PROJECT_VERSION >= PROJECT_VERSION_CHECK(2, 0, 0)
+    std::cout << "This code would only compile for version 2.0.0+\n";
+#elif PROJECT_VERSION >= PROJECT_VERSION_CHECK(1, 5, 0)
+    std::cout << "This code would compile for version 1.5.0-1.x.x\n";
+#else
+    std::cout << "This code compiles for version below 1.5.0\n";
+#endif
+
+    std::cout << "\n=== Library Versions ===\n";
     std::cout << "JSON: " << NLOHMANN_JSON_VERSION_MAJOR << "."
               << NLOHMANN_JSON_VERSION_MINOR << "."
               << NLOHMANN_JSON_VERSION_PATCH << '\n';
@@ -86,7 +128,7 @@ int main(int argc, char **argv)
     if (verbose)
     {
         const auto name = parsed_data["name"];
-        fmt::print("Name: {}\n", name);
+        fmt::print("Name: {}\n", name.dump());
     }
 
     return 0;

@@ -12,9 +12,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Options
-option(USE_CONAN "Whether to use Conan." OFF)
+option(USE_CONAN "Whether to use Conan." ON)
 option(USE_VCPKG "Whether to use VCPKG." OFF)
-option(USE_CPM "Whether to use CPM." ON)
+option(USE_CPM "Whether to use CPM." OFF)
 
 option(ENABLE_WARNINGS "Enable to add warnings to a target." ON)
 option(ENABLE_WARNINGS_AS_ERRORS "Enable to treat warnings as errors." OFF)
@@ -43,6 +43,11 @@ include(ConfigSafeGuards)
 include(AddGitSubmodule)
 include(Docs)
 include(Tools)
+include(Version)
+include(CompilerOptimization)
+
+# Generate version header
+auto_generate_version_header()
 
 if(ENABLE_WARNINGS)
     include(Warnings)
@@ -84,7 +89,7 @@ if(USE_CPM)
 elseif(USE_CONAN OR USE_VCPKG)
     if(USE_CONAN)
         message(STATUS "Using Conan")
-        include(${CMAKE_BINARY_DIR}/conan_toolchain.cmake)
+        include(${CMAKE_BINARY_DIR}/generators/conan_toolchain.cmake)
     elseif(USE_VCPKG)
         message(STATUS "Using VCPKG")
         include(
