@@ -143,7 +143,13 @@ else()
         list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
     endif()
 endif()
-
+if(MSVC)
+    # 设置为 Unicode 字符集
+    add_definitions(-DUNICODE -D_UNICODE)
+    # 可选：设置源文件编码为 UTF-8（推荐 VS2019 及以上）
+    add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+    message(STATUS "Using MSVC compiler, setting Unicode character set and UTF-8 encoding.")
+endif()
 add_subdirectory(configured)
 add_subdirectory(external)
 add_subdirectory(src)
